@@ -20,7 +20,7 @@ STYLE GUIDE (mostly borrowed from online style guides)
 3. Use four spaces for indentation.
 4. Always use header guards in header files
    Example: <br />
-   <code>
+   ```c++
    /* Module documentation */
    
    #ifndef MODULENAME_INC
@@ -29,7 +29,7 @@ STYLE GUIDE (mostly borrowed from online style guides)
    ...
    
    #endif       //MODULENAME_INC
-   </code>
+   ```
 5. Use cout for normal output, cerr for error messages.
 6. Error messages should be of the form 'ERROR: Error message'
 
