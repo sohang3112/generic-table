@@ -48,6 +48,7 @@ DOCUMENTATION
     * Documentation
     * Provides some functionality
     */
+    
    //Example class
    //represents something
    class SomeClass {
