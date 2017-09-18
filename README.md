@@ -18,8 +18,8 @@ STYLE GUIDE (mostly borrowed from online style guides)
 1. Try to avoid macros, pointers, goto.
 2. Use 'int main() {... return 0; }' pattern.
 3. Use four spaces for indentation.
-4. Always use header guards in header files
-   Example: <br />
+4. Always use header guards in header files. <br />
+   Example:
    ```c++
    /* Module documentation */
    
@@ -41,8 +41,8 @@ NAMING CONVENTIONS
 
 DOCUMENTATION
 1. Describe a module (header file) in its first line using multi-line comment form (/* ... */).
-2. Describe a class or function before its definition using single-line comment form (//...) <br />
-   Example: <br />
+2. Describe a class or function before its definition using single-line comment form (//...). <br />
+   Example:
    ```c++
    //Example class
    //represents something
