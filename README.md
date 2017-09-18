@@ -43,7 +43,7 @@ DOCUMENTATION
 1. Describe a module (header file) in its first line using multi-line comment form (/* ... */).
 2. Describe a class or function before its definition using single-line comment form (//...) <br />
    Example: <br />
-   <code>
+   ```c++
    //Example class
    //represents something
    class SomeClass {
@@ -55,5 +55,5 @@ DOCUMENTATION
    void some_function() {
        ...
    }
-   </code>
+   ```
 3. Add single-line comments for any line of code that may be difficult to understand.
