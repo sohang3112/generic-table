@@ -20,7 +20,7 @@ STYLE GUIDE (mostly borrowed from online style guides)
 3. Use four spaces for indentation.
 4. Always use header guards in header files
    Example:
-   @code_start
+   ``
    /* Module documentation */
    
    #ifndef MODULENAME_INC
@@ -29,7 +29,7 @@ STYLE GUIDE (mostly borrowed from online style guides)
    ...
    
    #endif       //MODULENAME_INC
-   @code_end
+   ``
 5. Use cout for normal output, cerr for error messages.
 6. Error messages should be of the form 'ERROR: Error message'
 
@@ -43,7 +43,7 @@ DOCUMENTATION
 1. Describe a module (header file) in its first line using multi-line comment form (/* ... */).
 2. Describe a class or function before its definition using single-line comment form (//...)
    Example:
-   @code_start
+   ``
    //Example class
    //represents something
    class SomeClass {
@@ -55,5 +55,5 @@ DOCUMENTATION
    void some_function() {
        ...
    }
-   @code_end
+   ``
 3. Add single-line comments for any line of code that may be difficult to understand.
