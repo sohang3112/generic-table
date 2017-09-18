@@ -44,6 +44,10 @@ DOCUMENTATION
 2. Describe a class or function before its definition using single-line comment form (//...). <br />
    Example:
    ```c++
+   /* Example module
+    * Documentation
+    * Provides some functionality
+    */
    //Example class
    //represents something
    class SomeClass {
