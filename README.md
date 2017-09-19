@@ -17,23 +17,33 @@ the options to:
 
 ## Style Guide
 ### (mostly borrowed from online style guides)
-- Try to avoid macros, pointers, goto.
-- Use 'int main() {... return 0; }' pattern.
-- Use four spaces for indentation.
+- Try to avoid macros, pointers, `goto`.
+- Use `int main() {... return 0; }` pattern.
+- Use tab or four spaces for indentation.
 - Always use header guards in header files. <br />
-   Example:
-   ```c++
-   /* Module documentation */
-   
-   #ifndef MODULENAME_INC
-   #define MODULENAME_INC
-   
-   ...
-   
-   #endif       //MODULENAME_INC
-   ```
+      Example:
+      ```c++
+      /* Module documentation */
+
+      #ifndef MODULENAME_INC
+      #define MODULENAME_INC
+
+      ...
+
+      #endif       //MODULENAME_INC
+      ```
 - Use `cout` for normal output, `cerr` for error messages.
 - Error messages should be of the form 'ERROR: Error message'
+- When a function pointer needs to be stored or passed to a function, then always use `typedef`. <br />
+      Example:
+      ```c++
+      //avoid this
+      void do_something(void (*func)(int));
+      
+      //do this instead
+      typedef void (*Callback)(int);
+      void do_something(Callback func);
+      ```
 
 ## Naming Conventions
 - MACRO_WORDS - Completely upper-case, use underscore between words.
@@ -42,25 +52,25 @@ the options to:
 - variable_name - Underscore case (Completely lower-case, underscore between words).
 
 ## Documentation
-- Describe a module (header file) in its first line using multi-line comment form (/* ... */).
-- Describe a class or function before its definition using single-line comment form (//...). <br />
-   Example:
-   ```c++
-   /* Example module
-    * Documentation
-    * Provides some functionality
-    */
-    
-   //Example class
-   //represents something
-   class SomeClass {
-       ...
-   };
-   
-   //Example function
-   //does something
-   void some_function() {
-       ...
-   }
-   ```
-- Add single-line comments for any line of code that may be difficult to understand.
+- Describe a module (header file) in its first line using multi-line comment form `/* ... */`
+- Describe a class or function before its definition using single-line comment form `// ... `. <br />
+      Example:
+      ```c++
+      /* Example module
+       * Documentation
+       * Provides some functionality
+       */
+
+      //Example class
+      //represents something
+      class SomeClass {
+          ...
+      };
+
+      //Example function
+      //does something
+      void some_function() {
+          ...
+      }
+      ```
+- Add single-line comments wherever appropriate.
