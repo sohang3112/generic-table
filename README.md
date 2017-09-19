@@ -1,5 +1,5 @@
 # generic-table
-DESCRIPTION
+## Description
 A command line interface that allows you to create, open or modify 'generic' tables,
 i.e., you choose which and how many columns you want in a table. In the table, you have
 the options to:
@@ -10,11 +10,13 @@ the options to:
 - Find a cell using a column name.
 - Delete table.
 
-IMPLEMENTATION DETAILS (need suggestions)
+## Implementation Details 
+### (need suggestions)
 - File extension for table could be '.table'.
 - Suggest error messages.
 
-STYLE GUIDE (mostly borrowed from online style guides)
+## Style Guide
+### (mostly borrowed from online style guides)
 - Try to avoid macros, pointers, goto.
 - Use 'int main() {... return 0; }' pattern.
 - Use four spaces for indentation.
@@ -33,13 +35,13 @@ STYLE GUIDE (mostly borrowed from online style guides)
 - Use `cout` for normal output, `cerr` for error messages.
 - Error messages should be of the form 'ERROR: Error message'
 
-NAMING CONVENTIONS
+## Naming Conventions
 - MACRO_WORDS - Completely upper-case, use underscore between words.
 - ClassName - Upper camel case (First letter in upper-case, first word of each word capital).
 - classMemberFunctions - Lower camel case (First letter in lower case, first word of each word capital).
 - variable_name - Underscore case (Completely lower-case, underscore between words).
 
-DOCUMENTATION
+## Documentation
 - Describe a module (header file) in its first line using multi-line comment form (/* ... */).
 - Describe a class or function before its definition using single-line comment form (//...). <br />
    Example:
