@@ -17,9 +17,9 @@ the options to:
 
 ## TODO
 ### (but no idea how!)
-- A table where the optimal column lengths are auto-calculated for each column given a condition.
-  (Optimal could be defined as 'shortest possible table height' and
-   Condition be defined as 'table width cannot exceed a maximum width, eg. page width')
+- A table where the optimal column lengths are auto-calculated for each column given a condition. <br />
+  (Optimal could be defined as 'shortest possible table height' and <br />
+   Condition be defined as 'table width cannot exceed a maximum width, eg. page width'.) 
 
 ## Style Guide
 ### (mostly borrowed from online style guides)
