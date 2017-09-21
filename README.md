@@ -1,4 +1,4 @@
-# generic-table
+# Generic Table (School Project)
 ## Description
 A command line interface that allows you to create, open or modify 'generic' tables,
 i.e., you choose which and how many columns you want in a table. In the table, you have
