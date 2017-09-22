@@ -9,7 +9,6 @@
 #define STD_CELL_WIDTH 10
 
 using namespace std;
-typedef std::string String;
 enum Align {Left, Right, Center};
 
 string withPadding(const string& str, size_t left, size_t right, char padCharacter=' ') {
@@ -38,15 +37,15 @@ bool isNumber(const string& str) {
 }
 
 class Table {
-    String table[5][5], header[5];
+    string table[5][5], header[5];
     int n_rows, n_cols;
     bool hasHeader;
 
-    void setRow(String row[], const std::vector<String>& vec) {
+    void setRow(String row[], const std::vector<string>& vec) {
         for (size_t i = 0; i < 5; ++i)
             row[i] = vec[i];
     }
-    void displayRow(const String row[], const size_t colSizes[], Align (*getAlign)(const String&)) const {
+    void displayRow(const string row[], const size_t colSizes[], Align (*getAlign)(const string&)) const {
         cout << cellSeperator << padCharacter;
         for (size_t i = 0; i < 5; ++i) {
             cout << alignedText(row[i], colSizes[i], getAlign(row[i]), padCharacter);
@@ -67,29 +66,31 @@ class Table {
             for (size_t i = 0; i < 5; ++i)
                 header[i] = "";
         }
-        void addHeader(const std::vector<String>& vec) {
+        void addHeader(const std::vector<string>& vec) {
             hasHeader = true;
             setRow(header, vec);
         }
-        void addRow(const std::vector<String>& vec) {
+        void addRow(const std::vector<string>& vec) {
             setRow(table[n_rows++], vec);
         }
         String getCell(size_t i, size_t j) const {
             return table[i][j];
         }
-        void setCell(size_t i, size_t j, String data) {
+        void setCell(size_t i, size_t j, string data) {
             table[i][j] = data;
         }
-        void display_cell_width_adjust() const {
+        void display_cell_width_adjust() const {        //resizable columns
             size_t colWidths[5], tableWidth = -1;  //(tableSize = -1) to handle shortage in size at start and excess at end
+            
+            //calculate column widths
             for (size_t i = 0; i < 5; ++i) {
                 colWidths[i] = header[i].size();
                 for (size_t row = 0; row < n_rows; ++row)
                     colWidths[i] = std::max(colWidths[i], table[row][i].size());
                 tableWidth += colWidths[i] + 3;
             }
+            
             displayBoundary(tableWidth, boundaryFill, boundaryFill);
-
             if (hasHeader) {
                 displayRow(header, colWidths, getHeadAlign);
                 displayBoundary(tableWidth, cellSeperator, boundaryFill);
@@ -100,7 +101,7 @@ class Table {
         }
         void display_word_wrap() const {
             size_t colWidths[5], tableWidth = -1;
-
+            //TODO
         }
     protected:
         static Align getCellAlign(const String& cell) {
