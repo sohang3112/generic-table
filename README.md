@@ -22,7 +22,7 @@ the options to:
   [smart pointers](https://www.google.co.in/url?sa=t&rct=j&q=&esrc=s&source=web&cd=2&cad=rja&uact=8&ved=0ahUKEwjPv7C2_bjWAhWJOY8KHeL3DZgQFggnMAE&url=https%3A%2F%2Fen.wikipedia.org%2Fwiki%2FSmart_pointer&usg=AFQjCNH4ZytUJdqQBsDb1CY4MfxUS3hROg) instead.)
 - Use `int main() {... return 0; }` pattern.
 - Use tab or four spaces for indentation.
-- Always use header guards in header files. <br />
+- Always use [header guards](https://www.google.co.in/url?sa=t&rct=j&q=&esrc=s&source=web&cd=13&cad=rja&uact=8&ved=0ahUKEwiy-az-_bjWAhWMLI8KHQwVAMsQFghfMAw&url=https%3A%2F%2Fen.wikipedia.org%2Fwiki%2FInclude_guard&usg=AFQjCNHepjZ5tQKjHbavij1ZAaG1oRQ-fQ) in header files. <br />
    Example:
    ```c++
    /* Module documentation */
