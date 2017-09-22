@@ -17,8 +17,9 @@ the options to:
 
 ## Style Guide
 ### (mostly borrowed from online style guides)
-- Try to avoid macros, pointers, `goto`.
-  (If you must use pointers, don't use raw pointers, use smart pointers instead.)
+- Try to avoid macros, pointers, `goto`. <br />
+  (If you must use pointers, don't use raw pointers, use 
+  [smart pointers](https://www.google.co.in/url?sa=t&rct=j&q=&esrc=s&source=web&cd=2&cad=rja&uact=8&ved=0ahUKEwjPv7C2_bjWAhWJOY8KHeL3DZgQFggnMAE&url=https%3A%2F%2Fen.wikipedia.org%2Fwiki%2FSmart_pointer&usg=AFQjCNH4ZytUJdqQBsDb1CY4MfxUS3hROg) instead.)
 - Use `int main() {... return 0; }` pattern.
 - Use tab or four spaces for indentation.
 - Always use header guards in header files. <br />
