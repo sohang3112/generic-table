@@ -15,15 +15,10 @@ the options to:
 - File extension for table could be '.table'.
 - Suggest error messages.
 
-## TODO
-### (but no idea how!)
-- A table where the optimal column lengths are auto-calculated for each column given a condition. <br />
-  (Optimal could be defined as 'shortest possible table height' and <br />
-   Condition be defined as 'table width cannot exceed a maximum width, eg. page width'.) 
-
 ## Style Guide
 ### (mostly borrowed from online style guides)
 - Try to avoid macros, pointers, `goto`.
+  (If you must use pointers, don't use raw pointers, use smart pointers instead.)
 - Use `int main() {... return 0; }` pattern.
 - Use tab or four spaces for indentation.
 - Always use header guards in header files. <br />
@@ -50,6 +45,12 @@ the options to:
    typedef void (*Callback)(int);
    void do_something(Callback func);
    ```
+ - Function/Class/Variable names must be descriptive, yet not too long. <br />
+   eg. `getName()`, `setName()`                          //accessor functions <br />
+       `isRunning()`                                     //boolean state functions <br />
+       `toString()`                                      //conversion functions <br />
+   Note: If a short form is used in a name, then do NOT use all caps. <br />
+   eg. `validateHtml()` not `validateHTML()` <br />
 
 ## Naming Conventions
 - MACRO_WORDS - Completely upper-case, use underscore between words.
