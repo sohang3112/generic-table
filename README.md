@@ -7,13 +7,13 @@ the options to:
    (in tabular form, nice features could be adjustable column width, word wrapping within columns)
 - Add a row (must fill all columns).
 - Edit a cell in a row (to edit whole row, type column-name '.').
-- Find a cell using a column name.
+- Find a cell using a field (column) name.
 - Delete table.
 
-## Implementation Details 
-### (need suggestions)
-- File extension for table could be '.table'.
-- Suggest error messages.
+## Ideas
+- Default Field Values: When user is adding/modifying record, and leaves a field blank, then a default
+  value for the field could be used (and setting the default field value could be done by showing an 
+  option for this in menu).
 
 ## Style Guide
 ### (mostly borrowed from online style guides)
