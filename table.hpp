@@ -8,7 +8,7 @@
 #ifndef TABLE_INC
 #define TABLE_INC
 
-#include "settings.hpp"
+#include "settings.hpp"            //CELL_END
 
 //Example interface (parameters may be added later)
 class Table {
