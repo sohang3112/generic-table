@@ -14,6 +14,10 @@ the options to:
 - Default Field Values: When user is adding/modifying record, and leaves a field blank, then a default
   value for the field could be used (and setting the default field value could be done by showing an 
   option for this in menu).
+- Menu Options (added)
+   - Templates: (Named) A set of column titles, that can be selected in one go using template name
+   - Configurable settings: Ability to manipulate settings such as user prompt, table boundary characters, etc.
+                            (Convert macros in [settings.hpp](settings.hpp) to variables that can be manipulated in menu.)
 
 ## Style Guide
 ### (mostly borrowed from online style guides)
