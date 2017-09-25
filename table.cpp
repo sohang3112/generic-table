@@ -99,9 +99,74 @@ class Table {
                 displayRow(table[r], colWidths, getCellAlign);
             displayBoundary(tableWidth, boundaryFill, boundaryFill);
         }
-        void display_word_wrap() const {
-            size_t colWidths[5], tableWidth = -1;
-            //TODO
+        void display_word_wrap_adjust() const {
+            //ignoring header, boundaries
+            //column width can be at most STD_CELL_WIDTH, shrink if possible
+
+            size_t colWidths[MAX_COLS];
+
+            //calculating column widths (maximum STD_CELL_SIZE, may be less)
+            for (size_t col = 0; col < n_cols; ++col) {
+                colWidths[col] = 0;
+                for (size_t row = 0; row < n_rows; ++row) {
+                    colWidths[col] = std::max(colWidths[col], table[row][col].size());
+                    if (colWidths[col] > STD_CELL_WIDTH) {
+                        colWidths[col] = STD_CELL_WIDTH;
+                        break;
+                    }
+                }
+            }
+
+            //print column widths
+            //for (size_t i = 0; i < n_cols; ++i)
+            //    cout << colWidths[i] << ' ';
+
+
+            //(r, c) -> (row number, column number)
+            for (size_t r = 0; r < n_rows; ++r) {
+                for (size_t i = 0; ; ++i) {
+                    bool all_done = true;      //all_done stores whether cell contents of each cell in row has been printed
+                    string line = "";
+                    for (size_t c = 0; c < n_cols; ++c) {
+                        size_t cell_curr_pos = i * colWidths[c];
+                        string cell_line;
+                        if (cell_curr_pos < table[r][c].size()) {       //cell contents have not been completely printed
+                            all_done = false;
+                            cell_line = table[r][c].substr(cell_curr_pos, colWidths[c]);
+                        } else
+                            cell_line = "";              //empty line, since cell contents have already been printed
+                        line += alignedText(cell_line, colWidths[c], normalAlign) + ' ';
+                    }
+                    if (all_done)
+                        break;
+                    cout << line << '\n';
+                }
+            }
+        }
+        void display_word_wrap_noadjust() {
+            //ignoring header, boundaries
+            //all columns have width equal to STD_CELL_WIDTH
+
+            //(r, c) -> (row number, column number)
+            for (size_t r = 0; r < n_rows; ++r) {
+                for (size_t i = 0; ; ++i) {
+                    bool all_done = true;      //all_done stores whether cell contents of each cell in row has been printed
+                    string line = "";
+                    for (size_t c = 0; c < n_cols; ++c) {
+                        size_t cell_curr_pos = i * STD_CELL_WIDTH;
+                        string cell_line;
+                        if (cell_curr_pos < table[r][c].size()) {       //cell contents have not been completely printed
+                            all_done = false;
+                            cell_line = table[r][c].substr(cell_curr_pos, STD_CELL_WIDTH);
+                        } else
+                            cell_line = "";              //empty line, since cell contents have already been printed
+                        line += alignedText(cell_line, STD_CELL_WIDTH, normalAlign) + ' ';
+                    }
+                    if (all_done)
+                        break;
+                    cout << line << '\n';
+                }
+            }
         }
     protected:
         static Align getCellAlign(const String& cell) {
