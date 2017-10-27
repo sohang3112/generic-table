@@ -3,7 +3,6 @@
 #include <string>
 #include <cstdlib>              //strtod
 #include <cctype>
-#include <cmath>
 #define MAX_ROWS 10
 #define MAX_COLS 5
 #define WINDOW_WIDTH 120         //in Windows Shell Prompt
