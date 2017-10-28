@@ -24,17 +24,15 @@ typedef Align (*AlignFunc)(String);
 
 struct TableInfo {
     int n_rows, n_cols;
-    char pad_char, cell_seperator, boundary_fill;
+    char pad_char;              // for cell padding (and also cells which do not occupy full column width)
+    char cell_seperator;        
+    char boundary_fill;         // in horizontal boundary
 };
 
 bool is_number(String str) {
     char* p;
     strtod(str, &p);            // point p to the last character after number
-    // check that number is followed only by whitespace
-    for (; *p != '\0'; ++p)
-        if (!isspace(*p))
-            return false;
-    return true;
+    return *p != '\0';          // str must contain only a number, nothing else
 }
 
 Align get_cell_align(String cell) {
@@ -61,19 +59,8 @@ void copy_padded_text(String out, String str, int left, int right, char pad_char
     copy_repeat(out + left + strlen(str), pad_char, right);
 }
 
-/*
-void copy_padded_text(String out, String str, int left, int right, int n_chars, char pad_char=' ') {
-    copy_repeat(out, pad_char, left);
-    strncpy(out + left, str, n_chars);
-    copy_repeat(out + left + n_chars, pad_char, right);
-}
-*/
-/*
-void copy_padded_text(String out, String str, int left, int right, char pad_char=' ') {
-    copy_padded_text(out, str, left, right, strlen(out), pad_char);
-}
-*/
-
+// Aligns str in given width according to provided alignment
+// Note: If str is larger than width, then it is written to out as it is.
 void copy_aligned_text(String out, String str, int width, Align align, char pad_char=' ') {
     int remaining_width = width - strlen(str);;
     if (remaining_width <= 0)
@@ -85,25 +72,7 @@ void copy_aligned_text(String out, String str, int width, Align align, char pad_
     else if (align == ALIGN_CENTER)
         copy_padded_text(out, str, remaining_width / 2, (remaining_width + 1) / 2, pad_char);
 }
-/*
-// Aligns str in given width according to provided alignment
-// Note: If str is larger than width, then it is written to out as it is.
-void copy_aligned_text(String out, String str, int width,
-                       Align align, int n_chars, char pad_char=' ') {
-    int remaining_width = width - n_chars;
-    if (remaining_width <= 0) {
-        strncpy(out, str, n_chars);
-        out[n_chars] = '\0';
-    } else if (align == ALIGN_LEFT) {
-        copy_padded_text(out, str, 0, remaining_width, n_chars, pad_char);
-    } else if (align == ALIGN_RIGHT) {
-        copy_padded_text(out, str, remaining_width, 0, n_chars, pad_char);
-    } else if (align == ALIGN_CENTER) {
-        copy_padded_text(out, str, remaining_width / 2, (remaining_width + 1) / 2,
-                         n_chars, pad_char);
-    }
-}
-*/
+
 // calculates the widths of each column in table
 // @return: Total table width (including cell padding and cell boundary)
 int calc_column_widths(int col_widths[], String table[], const TableInfo& info) {
@@ -133,54 +102,18 @@ void display_row(String table[], const TableInfo& info, int row, int col_widths[
         String line = "";
         //int line_length = 0;
         for (int c = 0; c < info.n_cols; ++c) {
-            /*
-            if (get_cell(table, row, c, n_cols)[0] != '\0') {
-                all_done = false;
-                String cell_line;
-                int i;
-                for (i = 0; get_cell(table, row, c, n_cols)[0] != '\0' && i < col_widths[c]; ++i) {
-                    cell_line[i] = get_cell(table, row, c, n_cols)[0];
-                    set_cell(table, row, c, n_cols,
-                             get_cell(table, row, c, n_cols) + 1);
-                }
-                cell_line[i] = '\0';
-                copy_aligned_text(line, cell_line, col_widths[c], ALIGN_LEFT, pad_char);
-            } else {
-                copy_repeat(line, pad_char, col_widths[c]);
-                line_length += col_widths[c];
-            }
-            line[line_length] = cell_seperator;
-            line[line_length+1] = ' ';
-            line[line_length+2] = '\0';
-            */
-
-            /*
-            int cell_curr_pos = i * col_widths[c];
-            char* line_curr = line + strlen(line);              // pointer to end of line
-            if (cell_curr_pos < strlen(get_cell(table, row, c, n_cols))) {
-                all_done = false;
-                copy_aligned_text(line_curr, get_cell(table, row, c, n_cols) + cell_curr_pos,
-                                  col_widths[c], ALIGN_LEFT, col_widths[c], pad_char);
-            } else {
-                copy_repeat(line_curr, pad_char, col_widths[c]);
-            }
-            */
-
             int cell_curr_pos = i * col_widths[c];
             char* line_curr = line + strlen(line);
             if (cell_curr_pos < strlen(get_cell(table,info, row, c))) {
                 all_done = false;
                 String cell_curr_line;
+                // extract number of characters (= column width) from cell
                 strncpy(cell_curr_line, get_cell(table, info, row, c) + cell_curr_pos, col_widths[c]);
                 cell_curr_line[col_widths[c]] = '\0'; // since strncpy is not guaranteed to terminate with null character
                 copy_aligned_text(line_curr, cell_curr_line, col_widths[c], get_align(cell_curr_line), info.pad_char);
             } else {
-                copy_repeat(line_curr, info.pad_char, col_widths[c]);
+                copy_repeat(line_curr, info.pad_char, col_widths[c]);       // empty cell, pad with pad_char
             }
-            /*line_curr[col_widths[c]] = pad_char;
-            line_curr[col_widths[c] + 1] = cell_seperator;
-            line_curr[col_widths[c] + 2] = pad_char;
-            line_curr[col_widths[c] + 3] = '\0';*/
             strcat(line, between_cells);
         }
         if (all_done)
@@ -214,17 +147,7 @@ void display_table(String table[], const TableInfo& info) {
     display_boundary(table_width, info.boundary_fill, info.boundary_fill);    // bottom boundary
 }
 
-template <typename Function, typename... ArgTypes>
-void display_result(const Function& func, ArgTypes... args) {
-    String out;
-    func(out, args...);
-    cout << out;
-}
-
 int main() {
-    //String str = "hello";
-    //display_result(copy_padded_text, str, 5, 7, '$');
-    //display_result(copy_aligned_text, str, 20, ALIGN_RIGHT, '$');
     String table[] = {
         "S. No.", "Product", "Cost Price", "Sale Price", "Discount",
         "1", "Science Kit", "220", "250", "10",
@@ -236,11 +159,5 @@ int main() {
     info.pad_char = ' ';
     info.cell_seperator = '|';
     info.boundary_fill = '-';
-    /*int col_widths[5];
-    cout << "Table Width: " << calc_column_widths(col_widths, table, info) << "\nColumn Widths: ";
-    for (int i = 0; i < 5; ++i)
-        cout << col_widths[i] << ' ';
-    cout << "\nRow 0:\n";
-    display_row(table, info, 1, col_widths, get_cell_align);*/
     display_table(table, info);
 }
