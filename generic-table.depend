@@ -1,0 +1,32 @@
+# depslib dependency file v1.0
+1510500764 source:k:\project file (older version)\generic-table\datatable.cpp
+	<iostream>
+	<cstring>
+	<sys/stat.h>
+	"DataTable.hpp"
+
+1510500612 k:\project file (older version)\generic-table\datatable.hpp
+	<fstream>
+	"pretty_table.hpp"
+	"settings.hpp"
+
+1509938842 k:\project file (older version)\generic-table\pretty_table.hpp
+	"settings.hpp"
+
+1509938842 k:\project file (older version)\generic-table\settings.hpp
+
+1510499366 source:k:\project file (older version)\generic-table\main.cpp
+	<iostream>
+	<fstream>
+	<cstdlib>
+	<unistd.h>
+	"DataTable.hpp"
+	"settings.hpp"
+
+1509938842 source:k:\project file (older version)\generic-table\pretty_table.cpp
+	<iostream>
+	<cstdlib>
+	<cstring>
+	<cctype>
+	"pretty_table.hpp"
+
