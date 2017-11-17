@@ -10,6 +10,9 @@ the options to:
 - Find a cell using a field (column) name.
 - Delete table.
 
+## Bugs
+- Displaying the table (in tabular format) crashes program
+
 ## Ideas
 - Default Field Values: When user is adding/modifying record, and leaves a field blank, then a default
   value for the field could be used (and setting the default field value could be done by showing an 
