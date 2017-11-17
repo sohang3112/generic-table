@@ -4,23 +4,35 @@
 
 #include "DataTable.hpp"
 
+//#define NDEBUG
+
+#ifndef NDEBUG
+
 #define CHECK_TABLE_VALID(ret) \
 if (!header) { cerr << ERR_MSG << "Header is NULL\n"; } \
 if (!isValid()) { cerr << ERR_MSG << "Invalid Table\n"; return ret; } \
 file.clear();          // clear eof flag
-#define THROW(err) { printStatus(status = err); reset(); } \
+#define THROW(err) { printStatus(status = err); close(); } \
+
+#else
+
+#define CHECK_TABLE_VALID(ret) ;    // do nothing
+#define THROW(err) ;                // do nothing
+
+#endif // NDEBUG
 
 bool DataTable::allocHeader() {
-    String* header = new String[table_info.n_cols];
-    if (!header) {
-        cerr << ERR_MSG << "Out of Memory!!!\n";
-        status = ERR_TABLE_INVALID;
-    }
-    return header != nullptr;
+	header = new String[table_info.n_cols];
+	if (!header) {
+		cerr << ERR_MSG << "Out of Memory";
+		close();
+		status = ERR_TABLE_INVALID;
+	}
+	return header != nullptr;
 }
 
-void input(String& str) {
-    cin.getline(str, MAX_STR_LEN);
+void input(String input) {
+    cin.getline(input, MAX_STR_LEN);
 }
 
 void printStatus(Status status) {
@@ -58,6 +70,10 @@ int createFile(String fname) {
 
 DataTable::DataTable(): header(nullptr) {
     status = ERR_FILE_NOT_CREATED;
+	table_info.pad_char = ' ';
+	table_info.boundary_fill = '-';
+	table_info.cell_seperator = '|';
+	table_info.boundary_junction = '+';
 	reset();
 }
 
@@ -67,10 +83,8 @@ DataTable::~DataTable() {
 
 void DataTable::reset() {
 	table_info.n_rows = table_info.n_cols = 0;
-	table_info.pad_char = ' ';
-	table_info.boundary_fill = '-';
-	table_info.cell_seperator = '|';
-	table_info.boundary_junction = '+';
+	recordStartPos = recordEndPos = 0;
+	strcpy(file_name, "");
 
 	delete[] header;
 	header = nullptr;
@@ -88,6 +102,7 @@ void DataTable::openFile(String fname, int err_code) {
 		status = err_code;
 	} else {
 		status = SUCCESS;
+		strcpy(file_name, fname);
 	}
 }
 
@@ -115,6 +130,10 @@ void DataTable::setNumCols(int cols) {
 	file << table_info.n_cols; 			// assuming file pointer at start of file
 }
 
+String* DataTable::getHeader() const {
+    return header;
+}
+
 void DataTable::create(String fname) {
 	if ((status = createFile(fname)) != SUCCESS) {
 		 return;
@@ -123,34 +142,7 @@ void DataTable::create(String fname) {
 }
 
 void DataTable::open(String fname) {
-    /*
 	openFile(fname, ERR_FILE_NOT_OPENED);
-	if (!isValid())
-        return;
-    file.seekg(0, ios::beg);                    // cursor is at end due to ios::ate mode
-    table_info.n_cols = file.get() - '0';             // extrqct (single-digit) no. of columns at start of file
-    if (table_info.n_cols <= 0) {
-        file.close();
-        status = ERR_TABLE_INVALID;
-        return;
-    }
-
-    // count rows
-    int i = 0;
-    table_info.n_rows = 0;
-    while (true) {
-        String cell;
-        if (getCell(cell) == EOF)
-            break;
-        if (i++ % table_info.n_cols == 0)
-            ++table_info.n_rows;
-    }
-    if (i % table_info.n_cols != 0) {              // incomplete row
-        file.close();
-        status = ERR_TABLE_INVALID;
-    }
-    */
-    openFile(fname, ERR_FILE_NOT_OPENED);
 	if (!isValid())
         return;
 
@@ -196,32 +188,33 @@ void DataTable::close() {
 	reset();
 }
 
-void DataTable::inputRecord() {
+void DataTable::_inputRecord() {
     CHECK_TABLE_VALID( )
 
 	if (!isValid()) {
 		cerr << ERR_MSG << "Invalid Table";
 		return;
 	}
-	file.seekg(0, ios::end);
-	for (int i = 0; i < getNumCols(); ++i) {
+    for (int i = 0; i < getNumCols(); ++i) {
 		String cell;
 		cout << "Enter value of field '" << header[i] << "'" << PROMPT;
 		input(cell);
         file << cell << CELL_DELIM;
 	}
-	++table_info.n_rows;
+}
+
+void DataTable::inputRecord() {
+    file.seekg(0, ios::end);
+    _inputRecord();
+    ++table_info.n_rows;
 }
 
 void DataTable::inputHeader() {
     CHECK_TABLE_VALID( )
-
-    if (!isValid()) {
-		cerr << ERR_MSG << "Invalid Table";
+	if (!allocHeader())
 		return;
-	}
+
 	file.seekg(TABLE_START, ios::beg);
-	header = new String[table_info.n_cols];
 	for (int i = 0; i < getNumCols(); ++i) {
 		cout << "Enter header of column " << i+1 << PROMPT;
 		input(header[i]);
@@ -239,71 +232,107 @@ void DataTable::addHeader(String head[]) {      // assumes empty table
     }
 }
 
-bool DataTable::searchRecord(String what, int field) {
-    CHECK_TABLE_VALID(-1)
+bool DataTable::searchRecord(String what, int field) {                  // found record can be printed through
+    CHECK_TABLE_VALID(false)
 
-    int i = 0, recordStartPos;
+    int i = 0;
     file.seekg(TABLE_START, ios::beg);
     while (true) {
         String cell;
+        if (i % table_info.n_cols == 0)                 // record end
+            recordStartPos = file.tellg();
         if (getCell(cell) == EOF)
             break;
-        if (i % table_info.n_cols == 0)
-            recordStartPos = file.tellg();
         if (i % table_info.n_cols == field && strcmp(cell, what) == 0) {   // found
-            file.seekg(recordStartPos, ios::beg);
+            recordEndPos = file.tellg();
             return true;
         }
         ++i;
     }
+    file.clear();
     return false;       // not found
+}
+
+void DataTable::modifyRecord() { // assumes file pointer positioned correctly (by calling searchRecord() first)
+    CHECK_TABLE_VALID( )
+
+    ofstream temp(".temp.txt");
+    if (!temp) {
+        cerr << ERR_MSG << "Could not create temporary file\n";
+        return;
+    }
+    file.seekg(0, ios::beg);
+    while (file.tellg() != recordStartPos)
+        temp.put(file.get());
+    file.seekg(recordEndPos, ios::beg);
+
+    _inputRecord();
+
+    while (file)
+        temp.put(file.get());
+    file.close();
+    temp.close();
+    //remove(file_name);
+    //rename(".temp.txt", file_name);
 }
 
 void DataTable::printCurrentRecord() {
     CHECK_TABLE_VALID( )
 
-    int i = 0;
-    while (true) {
+    file.seekg(recordStartPos, ios::beg);
+    for (int i = 0; i < table_info.n_cols; ++i) {
         String cell;
         if (getCell(cell) == EOF) {
+            cerr << ERR_MSG << "Unexpected EOF (while displaying record)\n";
             THROW(ERR_TABLE_INVALID)
             return;
         }
         cout << "\nValue of field '" << header[i] << "': " << cell;
-        if (++i == table_info.n_cols)
-            break;
     }
 }
 
 void DataTable::display() {
     CHECK_TABLE_VALID( )
 
+    cout << "Table Size: " << table_info.n_rows << " x " << table_info.n_cols << endl;
     int n_cells = table_info.n_rows * table_info.n_cols;
-    cout << "Rows: " << table_info.n_rows << " Cols: " << table_info.n_cols << " Cells: " << n_cells << endl;
+    cout << "No. of cells: " << n_cells << endl;
+
     String* table = new String[n_cells];
     if (!table) {
-        cerr << ERR_MSG << "Memory Problem (Buffer Overflow)";
-        return;
-    }
+		cerr << "Out of Memory!!!";
+		return;
+	}
+    cout << "\nTable Array Allocated\n";
+
+    file.seekg(TABLE_START, ios::beg);
+    cout << "\nMoved Cursor to Table Start\n";
 
     int i = 0;
-    file.seekg(TABLE_START, ios::beg);
-    cout << "\nPosition: " << file.tellg();
-    while (getCell(table[i]) != EOF) {
-        cout << "\nPostition: " << file.tellg() << " table[" << i << "] = " << table[i];
+    while (true) {
+        if (getCell(table[i]) == EOF)
+            break;
+        cout << "i = " << i << " table[i] = " << table[i] << endl;
         if (++i > n_cells) {
-            cerr << ERR_MSG << "Too many cells!!!\n";
-            status = ERR_TABLE_INVALID;
+            cerr << ERR_MSG << "Too many cells!!!";
             break;
         }
     }
 
-    if (i == n_cells)
+    cout << "\n\nLoaded table array\n\n";
+    if (i == n_cells) {
+        cout << "Pretty Table Start\n";
         pretty_table(table, table_info);
-    else
+        cout << "Pretty Table End\n";
+    } else
         THROW(ERR_TABLE_INVALID)
 
-    cout << table << ' ' << table[0];
-    delete[] table;
+    cout << "\nFreeing Memory of table: " << table << "\n";
+
+    if (table) {
+        cout << "\ntable[0]: " << table[0] << "\nDeleting table...";
+        delete[] table;
+    }
+    cout << "\nFunction End\n";
 }
 
