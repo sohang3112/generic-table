@@ -2,7 +2,7 @@
  *     Displaying the table (sometimes) crashes the program (eg. in 'family.table')
  *        - Appears even in isolated testing of function
  *     Modifying Record has some problem (check table file after using modify)
- *     Templates not working properly
+ *     Add record works fine when creating empty table, but crashes with templates
 
  * TODO
  *     Improve User Interface
@@ -44,6 +44,17 @@ int main() {
 	}
 
 	DataTable table;
+    /*
+	table.create("new.table");
+	printStatus(table.getStatus());
+	String report_card_template_headings[] = {"Roll No.", "Name", "Marks", "Percentage"};
+    int report_card_template_cols = 4;
+    if (table.isValid()) {
+        table.setNumCols(report_card_template_cols);
+        table.addHeader(report_card_template_headings);
+        table.inputRecord();
+    }
+    */
 	while (true) {
 		if (table.isValid()) {
 			submenuTableOperations(table);
@@ -51,7 +62,6 @@ int main() {
 			mainMenu(table);
 		}
 	}
-
     /*
     // table.open("family.table;");
     table.file.open("family.table", ios::in);
@@ -115,6 +125,7 @@ void mainMenu(DataTable& table) {
         table.create(fname);
 		printStatus(table.getStatus());
         if (table.isValid()) {
+            pause();
             submenuCreateTable(table);
         }
     } else if (opt == 'O' || opt == 'o') {
