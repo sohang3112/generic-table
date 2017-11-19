@@ -1,7 +1,13 @@
-/* TODO
- * Write number of columns in file (on creation), read (on opening)
- * Improve Menu
- * Add facilities (display, find, edit, etc.)
+/* BUGS
+ *     Displaying the table (sometimes) crashes the program (eg. in 'family.table')
+ *        - Appears even in isolated testing of function
+ *     Modifying Record has some problem (check table file after using modify)
+ *     Templates not working properly
+
+ * TODO
+ *     Improve User Interface
+ *     Add facilities (display, find, edit, delete, etc.)
+ *     Strip Terminal Whitespace from user input
  */
 #define NDEBUG
 
@@ -10,9 +16,14 @@
 #include <cstring>
 #include <cstdlib> 					// exit()
 #include <unistd.h>                 // chdir()
+#include <conio.h>
 #include "DataTable.hpp"
-#include "settings.hpp"
+#include "large_text.hpp"
 using namespace std;
+
+void clrscr() {
+    system("cls");
+}
 
 void mainMenu(DataTable& table);
 
@@ -22,10 +33,12 @@ void submenuCreateTableFromTemplate(DataTable& table);
 
 void submenuTableOperations(DataTable& table);
 
+void pause();
 bool confirm(String message);
 bool inputFileSearch(DataTable& table, String action="search");         // @return whether record found or not
 
 int main() {
+
 	if (chdir("Tables") != SUCCESS) {
         cerr << ERR_MSG << "Working Directory could not be changed";
 	}
@@ -39,7 +52,13 @@ int main() {
 		}
 	}
 
-
+    /*
+    // table.open("family.table;");
+    table.file.open("family.table", ios::in);
+    table.table_info.n_rows = table.table_info.n_cols = 4;
+    table.status = SUCCESS;
+    table.display();
+    */
 	/*String cell;
 	table.open("library.table");
 	printStatus(table.getStatus());
@@ -71,6 +90,9 @@ int main() {
 }
 
 void mainMenu(DataTable& table) {
+    clrscr();
+    cout << "======================== DATA TABLE MANAGEMENT SYSTEM =================================";
+    cout << "Project by Sohang Chopra and Aman Gill\n\n\n";
 	cout << "\nMain Menu:"
          << "\nC - Create Table"
          << "\nO - Open Table"
@@ -81,7 +103,9 @@ void mainMenu(DataTable& table) {
     cin >> opt;
     cin.ignore(1000, '\n');
     if (opt == 'E' || opt == 'e') {
-        cout << "Exiting...\n";
+        clrscr();
+        cout << THANK_YOU_LARGE_TEXT;
+        pause();
         exit(SUCCESS);
     }
 
@@ -101,7 +125,7 @@ void mainMenu(DataTable& table) {
         DataTable::inputFileName("Enter table name", fname);
         if (!fileExists(fname)) {
             cerr << ERR_MSG << "File '" << fname << "' does not exist";
-        } else if (confirm("Do you really want to delete this table? ")) {
+        } else if (confirm("Are you sure you want to permanently delete this table? ")) {
             if (remove(fname) == SUCCESS) {
                 cout << "Table '" << fname << "' successfully deleted";
             } else {
@@ -112,9 +136,12 @@ void mainMenu(DataTable& table) {
         cerr << ERR_MSG << "Invalid Option '" << opt << "'";
         return;
     }
+    pause();
 }
 
 void submenuTableOperations(DataTable& table) {
+    clrscr();
+    cout << MENU_LARGE_TEXT;
 	cout << "\nTable Submenu:"
 		 << "\nA - Add Record"
 		 << "\nD - Display Table"
@@ -140,11 +167,14 @@ void submenuTableOperations(DataTable& table) {
     } else {
 		cerr << ERR_MSG << "Invalid Option '" << opt << "'";
 	}
+	pause();
 }
 
 void submenuCreateTable(DataTable& table) {
-	bool correctOptionEntered = false;
+    clrscr();
+	bool correctOptionEntered;
 	while (!correctOptionEntered) {
+        correctOptionEntered = true;
 		cout << "\nCreate Submenu:"
 			 << "\nE - Empty File"
 			 << "\nT - Template"
@@ -158,9 +188,8 @@ void submenuCreateTable(DataTable& table) {
 			submenuCreateTableFromTemplate(table);
 		} else {
 			cerr << ERR_MSG << "Invalid Option '" << opt << "'";
-			continue;
+			correctOptionEntered = false;
 		}
-		correctOptionEntered = true;
 	}
 }
 
@@ -187,13 +216,19 @@ void inputCreateEmptyTable(DataTable& table) {
 }
 
 void submenuCreateTableFromTemplate(DataTable& table) {
+    clrscr();
     // Table Template Definitions
     static String report_card_template_headings[] = {"Roll No.", "Name", "Marks", "Percentage"};
     static int report_card_template_cols = 4;
     static String library_form_template_headings[] = {"Book No.", "Name", "Author", "Price", "Issued On"};
     static int library_form_template_cols = 5;
 
-    do {        // terminates when correct input is provided
+    bool valid_input;
+    while (!valid_input) {        // terminates when correct input is provided
+        valid_input = true;
+
+        clrscr();
+        cout << TEMPLATE_LARGE_TEXT;
         char opt;
         cout << "\nTemplate Submenu:"
              << "\nS - School Report Card"
@@ -209,9 +244,15 @@ void submenuCreateTableFromTemplate(DataTable& table) {
             table.addHeader(library_form_template_headings);
         } else {
             cerr << ERR_MSG << "Invalid Option '" << opt << "'";
-            continue;
+            valid_input = false;
+            pause();
         }
-    } while (false);
+    }
+}
+
+void pause() {
+    cout << "\nPress any key to continue...";
+    getch();
 }
 
 bool confirm(String message) {
