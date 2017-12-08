@@ -12,7 +12,7 @@
 if (!header) { cerr << ERR_MSG << "In function '" << func_name << "' Header is NULL\n"; } \
 if (!isValid()) { cerr << ERR_MSG << "Invalid Table\n"; return ret; } \
 file.clear();          // clear eof flag
-#define THROW(err) { printStatus(status = err); close(); } \
+#define THROW(err) { status = err; printStatus(*this); close(); } \
 
 #else
 
@@ -46,22 +46,23 @@ void input(String input) {
     strip(input);
 }
 
-void printStatus(Status status) {
+void printStatus(const DataTable& table) {
+    Status status = table.getStatus();
 	if (status == SUCCESS) {
-		cout << "Success\n";
+		cout << "Success";
 		return;
 	}
-	cerr << ERR_MSG;
+	cerr << ERR_MSG << "Table '" << table.getFileName() << "'";
 	if (status == ERR_FILE_NOT_CREATED) {
-		cerr << "File could not be created";
+		cerr << "could not be created";
 	} else if (status == ERR_FILE_NOT_OPENED) {
-		cerr << "File could not be opened";
+		cerr << "could not be opened";
 	} else if (status == ERR_FILE_EXISTS) {
-		cerr << "File already exists";
+		cerr << "already exists";
 	} else if (status == ERR_FILE_NOT_EXISTS) {
-		cerr << "File does not exist";
+		cerr << "does not exist";
 	} else if (status == ERR_TABLE_INVALID) {
-		cerr << "Table is invalid";
+		cerr << "is invalid";
 	}
 }
 
@@ -94,14 +95,14 @@ DataTable::~DataTable() {
 
 void DataTable::reset() {
 	table_info.n_rows = table_info.n_cols = 0;
-	recordStartPos = recordEndPos = tableBodyStartPos = 0;
+	recordStartPos = tableBodyStartPos = 0;
 	strcpy(file_name, "");
 
 	delete[] header;
 	header = nullptr;
 }
 
-void DataTable::inputFileName(String message, String& fname) {
+void DataTable::inputFileName(char* message, String& fname) {
 	cout << message << PROMPT;
 	input(fname);
 	strcat(fname, TABLE_EXT);
@@ -128,8 +129,12 @@ bool DataTable::isValid() const {
 	return status == SUCCESS;
 }
 
-int DataTable::getStatus() const {
+Status DataTable::getStatus() const {
 	return status;
+}
+
+const char* DataTable::getFileName() const {
+    return file_name;
 }
 
 int DataTable::getNumCols() const {
@@ -254,10 +259,8 @@ bool DataTable::searchRecord(String what, int field) {                  // found
             recordStartPos = file.tellg();
         if (getCell(cell) == EOF)
             break;
-        if (i % table_info.n_cols == field && strcmp(cell, what) == 0) {   // found
-            recordEndPos = file.tellg();
+        if (i % table_info.n_cols == field && strcmp(cell, what) == 0)
             return true;
-        }
         ++i;
     }
     file.clear();
@@ -267,9 +270,9 @@ bool DataTable::searchRecord(String what, int field) {                  // found
 void DataTable::modifyRecord() { // assumes file pointer positioned correctly (by calling searchRecord() first)
     CHECK_TABLE_VALID("modifyRecord", )
 
-    ofstream temp("temp.txt");
+    /*ofstream temp("temp.txt");
     if (!temp) {
-        cerr << ERR_MSG << "Could not create temporary file\n";
+        cerr << ERR_MSG << "Could not create temporary file for modification\n";
         return;
     }
     file.seekg(0, ios::beg);
@@ -284,7 +287,7 @@ void DataTable::modifyRecord() { // assumes file pointer positioned correctly (b
     file.close();
     temp.close();
     //remove(file_name);
-    //rename("temp.txt", file_name);
+    //rename("temp.txt", file_name);*/
 }
 
 void DataTable::printCurrentRecord() {
@@ -300,6 +303,42 @@ void DataTable::printCurrentRecord() {
         }
         cout << "\nValue of field '" << header[i] << "': " << cell;
     }
+}
+
+void DataTable::deleteRecord() { // assumes file pointer positioned correctly (by calling searchRecord() first)
+    CHECK_TABLE_VALID("deleteRecord", )
+
+    if (recordStartPos < tableBodyStartPos) {
+        cerr << ERR_MSG << "RecordPos (" << recordStartPos << ") < BodyPos (" << tableBodyStartPos << ")";
+        return;
+    }
+    ofstream temp("temp.table");
+    if (!temp) {
+        cerr << ERR_MSG << "Could not create temporary file for deletion\n";
+        return;
+    }
+    file.seekg(0, ios::beg);
+    while (file.tellg() != recordStartPos)
+        temp.put(file.get());
+
+    printCurrentRecord();
+    cout << "\n\nPast Record, Tellg(): " << file.tellg();
+
+    // file pointer is past the record
+    while (true) {
+        char ch = file.get();
+        if (!file)
+            break;
+        temp.put(ch);
+    }
+
+    file.close();
+    temp.close();
+    remove(file_name);
+    rename("temp.table", file_name);
+
+    --table_info.n_rows;
+    recordStartPos = 0;
 }
 
 void DataTable::display() {

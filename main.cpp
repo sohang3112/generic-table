@@ -2,7 +2,8 @@
  *     Displaying the table (sometimes) crashes the program (eg. in 'family.table')
  *        - Appears even in isolated testing of function
  *     Modifying Record has some problem (check table file after using modify)
- *     Add record works fine when creating empty table, but crashes with templates
+ *     Deleting Record achieves necessary changes in file, but if you then Search a Record,
+ *     the program pauses (maybe infinite loop?)
 
  * TODO
  *     Improve User Interface
@@ -14,6 +15,7 @@
 #include <iostream>
 #include <fstream>
 #include <cstring>
+#include <cctype>                   // toupper()
 #include <cstdlib> 					// exit()
 #include <unistd.h>                 // chdir()
 #include <conio.h>
@@ -33,14 +35,17 @@ void submenuCreateTableFromTemplate(DataTable& table);
 
 void submenuTableOperations(DataTable& table);
 
+char inputOption();
 void pause();
 bool confirm(String message);
-bool inputFileSearch(DataTable& table, String action="search");         // @return whether record found or not
+bool inputFileSearch(DataTable& table, String action);         // @return whether record found or not
 
 int main() {
 
 	if (chdir("Tables") != SUCCESS) {
         cerr << ERR_MSG << "Working Directory could not be changed";
+	} else {
+        cout << "Directory changed";
 	}
 
 	DataTable table;
@@ -100,7 +105,7 @@ int main() {
 }
 
 void mainMenu(DataTable& table) {
-    clrscr();
+    //clrscr();
     cout << "======================== DATA TABLE MANAGEMENT SYSTEM =================================";
     cout << "Project by Sohang Chopra and Aman Gill\n\n\n";
 	cout << "\nMain Menu:"
@@ -109,10 +114,8 @@ void mainMenu(DataTable& table) {
          << "\nD - Delete Table"
          << "\nE - Exit"
          << PROMPT;
-	char opt;
-    cin >> opt;
-    cin.ignore(1000, '\n');
-    if (opt == 'E' || opt == 'e') {
+	char opt = inputOption();
+    if (opt == 'E') {
         clrscr();
         cout << THANK_YOU_LARGE_TEXT;
         pause();
@@ -120,19 +123,19 @@ void mainMenu(DataTable& table) {
     }
 
     String fname;
-    if (opt == 'C' || opt == 'c') {
+    if (opt == 'C') {
         DataTable::inputFileName("Enter table name", fname);
         table.create(fname);
-		printStatus(table.getStatus());
+		printStatus(table);
         if (table.isValid()) {
             pause();
             submenuCreateTable(table);
         }
-    } else if (opt == 'O' || opt == 'o') {
+    } else if (opt == 'O') {
         DataTable::inputFileName("Enter table name", fname);
         table.open(fname);
-		printStatus(table.getStatus());
-    } else if (opt == 'D' || opt == 'd') {
+		printStatus(table);
+    } else if (opt == 'D') {
         DataTable::inputFileName("Enter table name", fname);
         if (!fileExists(fname)) {
             cerr << ERR_MSG << "File '" << fname << "' does not exist";
@@ -158,25 +161,27 @@ void submenuTableOperations(DataTable& table) {
 		 << "\nD - Display Table"
 		 << "\nF - Find Record"
 		 << "\nM - Modify Record"
+		 << "\nR - Remove Record"
 		 << "\nC - Close Table"
 		 << PROMPT;
-	char opt;
-	cin >> opt;
-	cin.ignore(1000, '\n');
-	if (opt == 'A' || opt == 'a') {
-		table.inputRecord();
-	} else if (opt == 'C' || opt == 'c') {
-		table.close();
-	} else if (opt == 'D' || opt == 'd') {
-		table.display();
-	} else if (opt == 'F' || opt == 'f') {
-        if (inputFileSearch(table))
+	char opt = inputOption();
+    if (opt == 'A') {
+        table.inputRecord();
+    } else if (opt == 'C') {
+        table.close();
+    } else if (opt == 'D') {
+        table.display();
+    } else if (opt == 'F') {
+        if (inputFileSearch(table, "search"))
             table.printCurrentRecord();
-    } else if (opt == 'M' || opt == 'm') {
+    } else if (opt == 'M') {
         if (inputFileSearch(table, "modify"))
             table.modifyRecord();
+    } else if (opt == 'R') {
+        if (inputFileSearch(table, "remove"))
+            table.deleteRecord();
     } else {
-		cerr << ERR_MSG << "Invalid Option '" << opt << "'";
+        cerr << ERR_MSG << "Invalid Option '" << opt << "'";
 	}
 	pause();
 }
@@ -190,17 +195,15 @@ void submenuCreateTable(DataTable& table) {
 			 << "\nE - Empty File"
 			 << "\nT - Template"
 			 << PROMPT;
-		char opt;
-		cin >> opt;
-		cin.ignore(1000, '\n');
-		if (opt == 'E' || opt == 'e') {
-			inputCreateEmptyTable(table);
-		} else if (opt == 'T' || opt == 't') {
-			submenuCreateTableFromTemplate(table);
-		} else {
-			cerr << ERR_MSG << "Invalid Option '" << opt << "'";
-			correctOptionEntered = false;
-		}
+		char opt = inputOption();
+        if (opt == 'E') {
+            inputCreateEmptyTable(table);
+        } else if (opt == 'T') {
+            submenuCreateTableFromTemplate(table);
+        } else {
+            cerr << ERR_MSG << "Invalid Option '" << opt << "'";
+            correctOptionEntered = false;
+        }
 	}
 }
 
@@ -209,7 +212,7 @@ void inputCreateEmptyTable(DataTable& table) {
     while (true) {
         cout << "Enter number of columns (max " << MAX_COLS << ")" << PROMPT;
         cin >> cols;
-        if (!cin) {                     /* TODO: Prevent multiple inputs (with whitepsace) */
+        if (!cin) {                     /* TODO: Prevent multiple inputs (with whitespace) */
             String str;
             cin.clear();                // clear fail bit
             cin >> str;                 // extract last input
@@ -218,8 +221,9 @@ void inputCreateEmptyTable(DataTable& table) {
             cerr << ERR_MSG << "Number of columns cannot be 0 or negative ('" << cols << "')\n";
         } else if (cols > MAX_COLS) {
             cerr << ERR_MSG << "Number of columns exceeds maximum limit ('" << cols << "')\n";
-        } else
+        } else {
             break;
+        }
     }
     cin.ignore(1000, '\n');
     table.setNumCols(cols);
@@ -240,17 +244,15 @@ void submenuCreateTableFromTemplate(DataTable& table) {
 
         clrscr();
         cout << TEMPLATE_LARGE_TEXT;
-        char opt;
         cout << "\nTemplate Submenu:"
              << "\nS - School Report Card"
              << "\nL - Library Form"
              << PROMPT;
-        cin >> opt;
-        cin.ignore(1000, '\n');
-        if (opt == 'S' || opt == 's') {
+        char opt = inputOption();
+        if (opt == 'S') {
             table.setNumCols(report_card_template_cols);
             table.addHeader(report_card_template_headings);
-        } else if (opt == 'L' || opt == 'l') {
+        } else if (opt == 'L') {
             table.setNumCols(library_form_template_cols);
             table.addHeader(library_form_template_headings);
         } else {
@@ -259,6 +261,13 @@ void submenuCreateTableFromTemplate(DataTable& table) {
             pause();
         }
     }
+}
+
+char inputOption() {
+    char opt;
+    cin >> opt;
+    cin.ignore(1000, '\n');
+    return toupper(opt);
 }
 
 void pause() {
