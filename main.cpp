@@ -1,5 +1,7 @@
 /* BUGS
- * 1. Add record suddenly NOT WORKING!
+ * 1. Add record suddenly NOT WORKING! (after 'open' table, but ok when just created)
+ * 2. Display - It crashes sometimes, sometimes not (but always works with empty table)
+ * 3.
  *
  * TODO
  * 1. Add MAIN_MENU_LARGE_TEXT, CREATE_LARGE_TEXT
@@ -7,6 +9,7 @@
  * NOTE
  * 1. Display working for 'school_report.table', 'library.table'
  */
+
 
 // Project by Sohang Chopra and Aman Gill
 #include <iostream>
@@ -58,6 +61,10 @@ void mainMenu(DataTable& table) {
          << "\nE - Exit"
          << PROMPT;
 	char opt = inputOption();
+	if (opt == '\0') {                           // error
+        pause();
+        return;
+	}
     if (opt == 'E') {
         clrscr();
         cout << THANK_YOU_LARGE_TEXT;
@@ -108,6 +115,10 @@ void submenuTableOperations(DataTable& table) {
 		 << "\nC - Close Table"
 		 << PROMPT;
 	char opt = inputOption();
+	if (opt == '\0') {              // error
+        pause();
+        return;
+	}
     if (opt == 'A') {
         table.inputRecord();
     } else if (opt == 'C') {
@@ -139,7 +150,8 @@ void submenuCreateTable(DataTable& table) {
 			 << "\nT - Template"
 			 << PROMPT;
 		char opt = inputOption();
-        if (opt == 'E') {
+		if (opt == '\0') {}          // error
+        else if (opt == 'E') {
             inputCreateEmptyTable(table);
         } else if (opt == 'T') {
             submenuCreateTableFromTemplate(table);
@@ -192,6 +204,7 @@ void submenuCreateTableFromTemplate(DataTable& table) {
              << "\nL - Library Form"
              << PROMPT;
         char opt = inputOption();
+        if (opt == '\0') {}           // error
         if (opt == 'S') {
             table.setNumCols(report_card_template_cols);
             table.addHeader(report_card_template_headings);
@@ -206,11 +219,15 @@ void submenuCreateTableFromTemplate(DataTable& table) {
     }
 }
 
-char inputOption() {
-    char opt;
-    cin >> opt;
+char inputOption() {                    // returns '\0' on error (when more than one character is entered)
+    String word;
+    cin >> word;
     cin.ignore(1000, '\n');
-    return toupper(opt);
+    if (word[1] != '\0' && !isspace(word[1])) {
+        cerr << ERR_MSG << "Invalid Option '" << word << "'\n";
+        return '\0';
+    }
+    return toupper(word[0]);
 }
 
 void pause() {
