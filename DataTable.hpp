@@ -18,7 +18,7 @@ class DataTable {
         const char* getFileName() const;
 		int getNumCols() const;
 		void setNumCols(int);
-		String* getHeader() const;
+		char* getFieldName(int field_no) const;
 
 		void create(String fname);
 		void open(String fname);
@@ -45,11 +45,13 @@ class DataTable {
 
         // for search, modify, delete
         streampos recordStartPos;
+        void beforeRecord(fstream& file);
+        void afterRecord(fstream& file);
 
         bool allocHeader();
         void reset();
         void openFile(String fname, int err_code);
-        void _inputRecord();            // file pointer must be set at correct position
+        void _inputRecord(fstream& file);            // file pointer must be set at correct position
         int getCell(String cell);                          // 0 on success, -1 on failure
 };
 

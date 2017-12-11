@@ -1,23 +1,19 @@
 /* BUGS
- *     Displaying the table (sometimes) crashes the program (eg. in 'family.table')
- *        - Appears even in isolated testing of function
- *     Modifying Record has some problem (check table file after using modify)
- *     Deleting Record achieves necessary changes in file, but if you then Search a Record,
- *     the program pauses (maybe infinite loop?)
-
+ * 1. Add record suddenly NOT WORKING!
+ *
  * TODO
- *     Improve User Interface
- *     Add facilities (display, find, edit, delete, etc.)
- *     Strip Terminal Whitespace from user input
+ * 1. Add MAIN_MENU_LARGE_TEXT, CREATE_LARGE_TEXT
+ *
+ * NOTE
+ * 1. Display working for 'school_report.table', 'library.table'
  */
-#define NDEBUG
 
+// Project by Sohang Chopra and Aman Gill
 #include <iostream>
 #include <fstream>
 #include <cstring>
 #include <cctype>                   // toupper()
 #include <cstdlib> 					// exit()
-#include <unistd.h>                 // chdir()
 #include <conio.h>
 #include "DataTable.hpp"
 #include "large_text.hpp"
@@ -41,25 +37,7 @@ bool confirm(String message);
 bool inputFileSearch(DataTable& table, String action);         // @return whether record found or not
 
 int main() {
-
-	if (chdir("Tables") != SUCCESS) {
-        cerr << ERR_MSG << "Working Directory could not be changed";
-	} else {
-        cout << "Directory changed";
-	}
-
 	DataTable table;
-    /*
-	table.create("new.table");
-	printStatus(table.getStatus());
-	String report_card_template_headings[] = {"Roll No.", "Name", "Marks", "Percentage"};
-    int report_card_template_cols = 4;
-    if (table.isValid()) {
-        table.setNumCols(report_card_template_cols);
-        table.addHeader(report_card_template_headings);
-        table.inputRecord();
-    }
-    */
 	while (true) {
 		if (table.isValid()) {
 			submenuTableOperations(table);
@@ -67,47 +45,12 @@ int main() {
 			mainMenu(table);
 		}
 	}
-    /*
-    // table.open("family.table;");
-    table.file.open("family.table", ios::in);
-    table.table_info.n_rows = table.table_info.n_cols = 4;
-    table.status = SUCCESS;
-    table.display();
-    */
-	/*String cell;
-	table.open("library.table");
-	printStatus(table.getStatus());
-	cout << "\nheader: " << table.getHeader()[0] << " | "
-                         << table.getHeader()[1] << " | "
-                         << table.getHeader()[2] << " | "
-                         << table.getHeader()[3] << "\n";
-    if (table.getCell(cell) == EOF)
-        cout << "\nEOF\n";
-    else
-        cout << "Cell: " << cell;
-	table.display();
-	*/
-
-	/*
-    TableInfo info;
-    info.n_rows = 2;
-    info.n_cols = 2;
-    info.pad_char = ' ';
-    info.cell_seperator = '|';
-    info.boundary_fill = '-';
-
-    String* table = new String[info.n_rows * info.n_cols];
-    strcpy(table[0], "Name"); strcpy(table[1], "Age");
-    strcpy(table[2], "Sohang"); strcpy(table[3], "100");
-    pretty_table(table, info);
-    delete[] table
-    */
+	return 0;
 }
 
 void mainMenu(DataTable& table) {
-    //clrscr();
-    cout << "======================== DATA TABLE MANAGEMENT SYSTEM =================================";
-    cout << "Project by Sohang Chopra and Aman Gill\n\n\n";
+    clrscr();
+    cout << "======================== DATA TABLE MANAGEMENT SYSTEM ==========================";
 	cout << "\nMain Menu:"
          << "\nC - Create Table"
          << "\nO - Open Table"
@@ -155,7 +98,7 @@ void mainMenu(DataTable& table) {
 
 void submenuTableOperations(DataTable& table) {
     clrscr();
-    cout << MENU_LARGE_TEXT;
+    cout << MENU_LARGE_TEXT << "\nOpen Table - '" << table.getFileName() << "'\n";
 	cout << "\nTable Submenu:"
 		 << "\nA - Add Record"
 		 << "\nD - Display Table"
@@ -292,11 +235,19 @@ bool confirm(String message) {
 bool inputFileSearch(DataTable& table, String action) {
     int field_no;
     String value;
-    cout << "Enter field number " << PROMPT;
-    cin >> field_no;
-    --field_no;             // adjust from 0-based to 1-based
-    cin.ignore(1000, '\n');
-    cout << "Enter value to " << action << " in field '" << table.getHeader()[field_no] << "'" << PROMPT;
+    while (true) {
+        cout << "Enter field name " << PROMPT;
+        String field_name;
+        input(field_name);
+        for (field_no = 0; field_no < table.getNumCols(); ++field_no) {
+            if (strcmpi(field_name, table.getFieldName(field_no)) == 0)
+                break;
+        }
+        if (field_no < table.getNumCols())
+            break;
+        cerr << ERR_MSG << "No field with name '" << field_name << "'\n";
+    }
+    cout << "Enter value to " << action << " in field '" << table.getFieldName(field_no) << "'" << PROMPT;
     input(value);
     if (table.searchRecord(value, field_no)) {
         cout << "Record Found...\n";
@@ -306,3 +257,4 @@ bool inputFileSearch(DataTable& table, String action) {
         return false;
     }
 }
+

@@ -19,7 +19,7 @@
 // file specifics
 #define CELL_DELIM '\x01'               // any non-printable character would do
 #define TABLE_EXT ".table"
-#define TABLE_START 1                   // first character reserved for (single-digit) no. of columns
+#define TABLE_HEADING_START 1                   // first character reserved for (single-digit) no. of columns
 
 #define WINDOW_WIDTH 120                // in Windows Shell Prompt
 

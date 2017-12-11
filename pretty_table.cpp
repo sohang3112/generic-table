@@ -130,3 +130,4 @@ void pretty_table(String table[], const TableInfo& info) {
     }
     display_boundary(info, col_widths);             // bottom boundary
 }
+
