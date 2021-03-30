@@ -1,6 +1,7 @@
 # Generic Table (School Project)
 ## Description
-A command line interface that allows you to create, open or modify 'generic' tables,
+It is basically a command-line version of a (very stripped-down!) table editing program 
+such as MS Excel. Its command line interface allows you to create, open or modify 'generic' tables,
 i.e., you choose which and how many columns you want in a table. In the table, you have
 the options to:
 - Display whole table.
